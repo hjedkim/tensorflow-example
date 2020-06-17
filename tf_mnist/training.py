@@ -63,6 +63,7 @@ def train(flags, sess, model, mnist):
     train_writer = tf.summary.FileWriter(flags.log_dir + '/train', sess.graph)
     test_writer = tf.summary.FileWriter(flags.log_dir + '/test')
     tf.global_variables_initializer().run()
+    accuracies = []
 
     # Train the model, and also write summaries.
     # Every 10th step, measure test-set accuracy, and write test summaries
@@ -80,11 +81,14 @@ def train(flags, sess, model, mnist):
 
     for i in range(flags.max_steps):
 
+        summary, acc = sess.run([merged, accuracy], feed_dict=feed_dict(False))
+        accuracies.append(acc.item())
         if i % 10 == 0:
             # Record summaries and test-set accuracy
-            summary, acc = sess.run([merged, accuracy], feed_dict=feed_dict(False))
             test_writer.add_summary(summary, i)
-            print(json.dumps({'step': i, 'accuracy': acc.item()}))
+            rolling_accuracy = np.sum(accuracies) / 10
+            print(json.dumps({'step': i, 'rolling_accuracy': rolling_accuracy}))
+            accuracies = []
         elif i % 100 == 99:  # Record train set summaries, and train
             run_options = tf.RunOptions(trace_level=tf.RunOptions.FULL_TRACE)
             run_metadata = tf.RunMetadata()

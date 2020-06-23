@@ -88,6 +88,7 @@ def train(flags, sess, model, mnist):
             test_writer.add_summary(summary, i)
             rolling_accuracy = np.sum(accuracies) / 10
             print(json.dumps({'step': i, 'rolling_accuracy': rolling_accuracy}))
+            print(json.dumps({'step': i, 'accuracy': acc.item()}))
             accuracies = []
         elif i % 100 == 99:  # Record train set summaries, and train
             run_options = tf.RunOptions(trace_level=tf.RunOptions.FULL_TRACE)
